@@ -27,14 +27,28 @@ choose_key() {
 ui_print 'Migrate existing FlClash files? Volume Up = yes; Volume Down = no.'
 if choose_key; then
   SOURCE_DIR=
-  for candidate in /data/user/0/com.follow.clash/files /data/data/com.follow.clash/files /data/user/0/com.follow.clash.dev/files /data/data/com.follow.clash.dev/files; do
-    if [ -f "$candidate/config.yaml" ]; then
-      SOURCE_DIR="$candidate"
-      break
-    fi
+  FALLBACK_DIR=
+  for user_root in /data/user/[0-9]* /data/data; do
+    [ -d "$user_root" ] || continue
+    for package in com.follow.clash com.follow.clash.dev; do
+      for directory in files app_flutter; do
+        candidate="$user_root/$package/$directory"
+        [ -d "$candidate" ] || continue
+        if [ -f "$candidate/config.yaml" ]; then
+          SOURCE_DIR="$candidate"
+          break
+        fi
+        if [ -z "$FALLBACK_DIR" ] && { [ -d "$candidate/profiles" ] || [ -d "$candidate/scripts" ]; }; then
+          FALLBACK_DIR="$candidate"
+        fi
+      done
+      [ -n "$SOURCE_DIR" ] && break
+    done
+    [ -n "$SOURCE_DIR" ] && break
   done
+  [ -n "$SOURCE_DIR" ] || SOURCE_DIR="$FALLBACK_DIR"
   if [ -z "$SOURCE_DIR" ]; then
-    ui_print 'No existing config.yaml found; leaving module data empty.'
+    ui_print 'No FlClash profiles or scripts found; migration skipped.'
   else
     ui_print "Source: $SOURCE_DIR"
     ui_print 'Volume Up = copy files; Volume Down = link to app files.'
@@ -52,6 +66,10 @@ if choose_key; then
         fi
       done
       ui_print 'Linked existing files. Uninstalling the app will break the links.'
+    fi
+    if [ ! -f "$DATA_DIR/config.yaml" ]; then
+      ui_print 'No generated config.yaml found. Profiles/scripts were migrated, but the module cannot start yet.'
+      ui_print 'Generate or provide config.yaml before using flclash-root start.'
     fi
   fi
 else
