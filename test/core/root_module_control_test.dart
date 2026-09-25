@@ -30,10 +30,7 @@ void main() {
     exitCode = 1;
     stdout = 'stopped\n';
     expect(await module.status(), isFalse);
-    expect(
-      commands,
-      everyElement('${RootModuleControl.executable} status'),
-    );
+    expect(commands, everyElement('${RootModuleControl.executable} status'));
   });
 
   test('status surfaces a failed root command', () async {
@@ -41,11 +38,13 @@ void main() {
     stderr = 'permission denied';
     await expectLater(
       module.status(),
-      throwsA(isA<StateError>().having(
-        (error) => error.message,
-        'message',
-        contains('permission denied'),
-      )),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('permission denied'),
+        ),
+      ),
     );
   });
 
@@ -63,25 +62,30 @@ void main() {
     stderr = 'root denied';
     await expectLater(
       module.enable(),
-      throwsA(isA<StateError>().having(
-        (error) => error.message,
-        'message',
-        contains('root denied'),
-      )),
+      throwsA(
+        isA<StateError>().having(
+          (error) => error.message,
+          'message',
+          contains('root denied'),
+        ),
+      ),
     );
     expect(commands.single, '${RootModuleControl.executable} enable');
   });
 
-  test('restart, disable and configuration test use the module entrypoint', () async {
-    await module.restart();
-    await module.disable();
-    await module.test();
-    expect(commands, [
-      '${RootModuleControl.executable} restart',
-      '${RootModuleControl.executable} disable',
-      '${RootModuleControl.executable} test',
-    ]);
-  });
+  test(
+    'restart, disable and configuration test use the module entrypoint',
+    () async {
+      await module.restart();
+      await module.disable();
+      await module.test();
+      expect(commands, [
+        '${RootModuleControl.executable} restart',
+        '${RootModuleControl.executable} disable',
+        '${RootModuleControl.executable} test',
+      ]);
+    },
+  );
 
   test('installation detection checks the executable as root', () async {
     expect(await module.isInstalled, isTrue);

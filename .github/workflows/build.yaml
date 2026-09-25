@@ -44,13 +44,7 @@ jobs:
         run: flutter pub get
 
       - name: Check format
-        run: dart format lib test tool plugins setup.dart
-
-      - run: git diff --binary > format.patch
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Dart-format-patch
-          path: format.patch
+        run: dart format --output=none --set-exit-if-changed lib test tool plugins setup.dart
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos
