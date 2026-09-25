@@ -2,6 +2,13 @@ name: Root module prototype
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feature/root-transparent-module
+    paths:
+      - 'root_module/**'
+      - 'tool/build_root_module.sh'
+      - '.github/workflows/root-module.yaml'
 
 jobs:
   module:
