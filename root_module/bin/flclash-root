@@ -69,7 +69,7 @@ case "$1" in
     printf '%s\n' "$config_path" > "$CONFIG_PATH_FILE" || exit 1
     chmod 600 "$CONFIG_PATH_FILE"
     ;;
-  enable) touch "$DATA_DIR/autostart" && "$0" start ;;
+  enable) "$0" start && touch "$DATA_DIR/autostart" ;;
   disable) rm -f "$DATA_DIR/autostart" && "$0" stop ;;
   status) if running_pid; then exit 0; else echo stopped; exit 1; fi ;;
   test) configured_path && "$CORE" -t -d "${config_path%/*}" -f "$config_path" ;;
