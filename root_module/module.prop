@@ -1,0 +1,6 @@
+id=flclash_root
+name=FlClash Root Core (experimental)
+version=0.1.0
+versionCode=1
+author=FlClash contributors
+description=Standalone root core for transparent proxy experiments

@@ -1,0 +1,53 @@
+#!/system/bin/sh
+MODDIR="${0%/*}/.."
+DATA_DIR=/data/adb/flclash-root
+PID_FILE="$DATA_DIR/core.pid"
+LOG_FILE="$DATA_DIR/core.log"
+CORE="$MODDIR/bin/mihomo"
+
+running_pid() {
+  [ -f "$PID_FILE" ] || return 1
+  pid="$(cat "$PID_FILE")"
+  case "$pid" in ''|*[!0-9]*) return 1 ;; esac
+  [ -r "/proc/$pid/cmdline" ] || return 1
+  tr '\000' ' ' < "/proc/$pid/cmdline" | grep -Fq "$CORE" || return 1
+  printf '%s\n' "$pid"
+}
+
+case "$1" in
+  start)
+    [ -f "$DATA_DIR/config.yaml" ] || { echo 'Missing config.yaml' >&2; exit 1; }
+    [ -x "$CORE" ] || { echo 'Missing executable core' >&2; exit 1; }
+    if running_pid >/dev/null; then exit 0; fi
+    "$CORE" -t -d "$DATA_DIR" -f "$DATA_DIR/config.yaml" >>"$LOG_FILE" 2>&1 || exit 1
+    "$CORE" -d "$DATA_DIR" -f "$DATA_DIR/config.yaml" >>"$LOG_FILE" 2>&1 &
+    pid=$!
+    echo "$pid" > "$PID_FILE"
+    sleep 2
+    if ! running_pid >/dev/null; then
+      rm -f "$PID_FILE"
+      echo 'Core exited; inspect core.log' >&2
+      exit 1
+    fi
+    ;;
+  stop)
+    pid="$(running_pid)" || exit 0
+    kill -TERM "$pid" || exit 1
+    count=0
+    while running_pid >/dev/null && [ "$count" -lt 10 ]; do
+      sleep 1
+      count=$((count + 1))
+    done
+    if running_pid >/dev/null; then
+      echo 'Core did not stop; leaving PID file intact' >&2
+      exit 1
+    fi
+    rm -f "$PID_FILE"
+    ;;
+  restart) "$0" stop && "$0" start ;;
+  enable) touch "$DATA_DIR/autostart" && "$0" start ;;
+  disable) rm -f "$DATA_DIR/autostart" && "$0" stop ;;
+  status) if running_pid; then exit 0; else echo stopped; exit 1; fi ;;
+  test) "$CORE" -t -d "$DATA_DIR" -f "$DATA_DIR/config.yaml" ;;
+  *) echo 'Usage: flclash-root {start|stop|restart|enable|disable|status|test}' >&2; exit 2 ;;
+esac

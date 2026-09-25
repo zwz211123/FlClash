@@ -1,0 +1,22 @@
+name: Root module prototype
+
+on:
+  workflow_dispatch:
+
+jobs:
+  module:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: core/Clash.Meta/go.mod
+          cache-dependency-path: core/Clash.Meta/go.sum
+      - name: Build experimental module
+        run: bash tool/build_root_module.sh dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlClash-root-module-arm64-prototype
+          path: dist/FlClash-root-module-arm64.zip
