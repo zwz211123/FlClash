@@ -21,6 +21,7 @@ void main() {
 
   setUpAll(() {
     globalState.packageInfo = _packageInfo;
+    globalState.appEnv = 'pre';
   });
 
   setUp(() {
@@ -58,6 +59,10 @@ void main() {
 
       expect(globalState.ua, _packageInfo.ua);
     });
+  });
+
+  test('the prerelease channel remains identifiable to the UI', () {
+    expect(globalState.isPre, isTrue);
   });
 
   group('attach', () {
