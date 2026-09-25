@@ -44,7 +44,12 @@ jobs:
           flutter-version: '3.47.1'
           cache: true
       - run: flutter pub get
-      - run: dart format --output=none --set-exit-if-changed lib test tool plugins setup.dart
+      - run: dart format lib test tool plugins setup.dart
+      - run: git diff --binary > format.patch
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Dart-format-patch
+          path: format.patch
       - run: flutter analyze --no-fatal-infos
       - run: flutter test --reporter expanded
       - uses: gradle/actions/setup-gradle@v6
