@@ -6,11 +6,11 @@ import 'package:flutter/foundation.dart';
 /// Commands for the separately installed root module. This is deliberately
 /// independent of FlClash's backup, restore and profile storage.
 class RootModuleControl {
-  static const executable =
-      '/data/adb/modules/flclash_root/bin/flclash-root';
+  static const executable = '/data/adb/modules/flclash_root/bin/flclash-root';
 
   @visibleForTesting
-  ProcessResult Function(String, List<String>) run = Process.run;
+  Future<ProcessResult> Function(String, List<String>) run =
+      (executable, arguments) => Process.run(executable, arguments);
 
   Future<bool> get isInstalled async =>
       (await run('su', ['-c', 'test -x $executable'])).exitCode == 0;

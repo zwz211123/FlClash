@@ -206,9 +206,7 @@ class RootCore extends CoreHandlerInterface {
       offset += 4;
       Object? payload;
       try {
-        payload = json.decode(
-          utf8.decode(data.sublist(offset, offset + size)),
-        );
+        payload = json.decode(utf8.decode(data.sublist(offset, offset + size)));
       } catch (_) {
         _disconnected();
         return;

@@ -9,7 +9,6 @@ import 'package:fl_clash/common/system_dns.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/manager/hotkey_manager.dart';
 import 'package:fl_clash/manager/manager.dart';
-import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:material_ui/material_ui.dart';
@@ -24,9 +23,7 @@ Widget buildManagerStack({
   onConnectivityChanged,
   required Widget child,
 }) {
-  final platformApp = isDesktop
-      ? WindowHeaderContainer(child: child)
-      : child;
+  final platformApp = isDesktop ? WindowHeaderContainer(child: child) : child;
   final state = AppStateManager(
     child: CoreManager(
       child: ConnectivityManager(

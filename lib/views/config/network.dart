@@ -311,10 +311,7 @@ List<Widget> networkOptionsItems({
     if (isMacOS) const AutoSetSystemDnsItem(),
     const TunStackItem(),
     // The root module runs the Linux executable, which honors interface-name.
-    ...[
-      const InterfaceNameModeItem(),
-      const InterfaceNameItem(),
-    ],
+    ...[const InterfaceNameModeItem(), const InterfaceNameItem()],
     if (!isDesktop) ...[const RouteModeItem(), const RouteAddressItem()],
   ];
 }

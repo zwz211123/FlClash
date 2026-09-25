@@ -108,7 +108,8 @@ class SetupAction extends _$SetupAction {
     final transparentReady =
         !system.isAndroid || ref.read(patchClashConfigProvider).tun.enable;
     final shouldRun =
-        transparentReady && (_isRunning || ref.read(appSettingProvider).autoRun);
+        transparentReady &&
+        (_isRunning || ref.read(appSettingProvider).autoRun);
     if (shouldRun) {
       await setRunning(true, initialize: true);
     } else {
