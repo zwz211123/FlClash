@@ -83,7 +83,7 @@ class TUNButton extends StatelessWidget {
       label: context.appLocalizations.tun,
       iconData: Icons.stacked_line_chart,
       items: [
-        if (system.isDesktop) const TUNItem(),
+        const TUNItem(),
         if (system.isMacOS) const AutoSetSystemDnsItem(),
         const TunStackItem(),
       ],

@@ -3,7 +3,18 @@ MODDIR="${0%/*}/.."
 DATA_DIR=/data/adb/flclash-root
 PID_FILE="$DATA_DIR/core.pid"
 LOG_FILE="$DATA_DIR/core.log"
-CORE="$MODDIR/bin/mihomo"
+CORE="$MODDIR/bin/flclash-core"
+CONFIG_PATH_FILE="$DATA_DIR/config-path"
+
+configured_path() {
+  [ -f "$CONFIG_PATH_FILE" ] || { echo 'No app config path configured' >&2; return 1; }
+  IFS= read -r config_path < "$CONFIG_PATH_FILE"
+  case "$config_path" in
+    /data/user/[0-9]*/com.follow.clash/files/config.yaml|/data/user/[0-9]*/com.follow.clash.dev/files/config.yaml|/data/data/com.follow.clash/files/config.yaml|/data/data/com.follow.clash.dev/files/config.yaml) ;;
+    *) echo 'Invalid app config path' >&2; return 1 ;;
+  esac
+  [ -f "${config_path%/*}/root-control-token" ] || { echo 'App control token is missing' >&2; return 1; }
+}
 
 running_pid() {
   [ -f "$PID_FILE" ] || return 1
@@ -16,11 +27,15 @@ running_pid() {
 
 case "$1" in
   start)
-    [ -f "$DATA_DIR/config.yaml" ] || { echo 'Missing config.yaml' >&2; exit 1; }
     [ -x "$CORE" ] || { echo 'Missing executable core' >&2; exit 1; }
+    configured_path || exit 1
     if running_pid >/dev/null; then exit 0; fi
-    "$CORE" -t -d "$DATA_DIR" -f "$DATA_DIR/config.yaml" >>"$LOG_FILE" 2>&1 || exit 1
-    "$CORE" -d "$DATA_DIR" -f "$DATA_DIR/config.yaml" >>"$LOG_FILE" 2>&1 &
+    home_dir="${config_path%/*}"
+    if [ -f "$DATA_DIR/autostart" ]; then
+      "$CORE" --root-listen "$home_dir" autostart >>"$LOG_FILE" 2>&1 &
+    else
+      "$CORE" --root-listen "$home_dir" >>"$LOG_FILE" 2>&1 &
+    fi
     pid=$!
     echo "$pid" > "$PID_FILE"
     sleep 2
@@ -45,9 +60,27 @@ case "$1" in
     rm -f "$PID_FILE"
     ;;
   restart) "$0" stop && "$0" start ;;
-  enable) touch "$DATA_DIR/autostart" && "$0" start ;;
-  disable) rm -f "$DATA_DIR/autostart" && "$0" stop ;;
+  configure)
+    config_path="$2"
+    case "$config_path" in
+      /data/user/[0-9]*/com.follow.clash/files/config.yaml|/data/user/[0-9]*/com.follow.clash.dev/files/config.yaml|/data/data/com.follow.clash/files/config.yaml|/data/data/com.follow.clash.dev/files/config.yaml) ;;
+      *) echo 'Expected the FlClash app config.yaml path' >&2; exit 2 ;;
+    esac
+    if [ -f "$CONFIG_PATH_FILE" ]; then
+      IFS= read -r old_config_path < "$CONFIG_PATH_FILE"
+      if [ "$old_config_path" != "$config_path" ]; then
+        "$0" stop || exit 1
+      fi
+    fi
+    mkdir -p "$DATA_DIR" || exit 1
+    chmod 700 "$DATA_DIR"
+    printf '%s\n' "$config_path" > "$CONFIG_PATH_FILE" || exit 1
+    chmod 600 "$CONFIG_PATH_FILE"
+    ;;
+  enable) touch "$DATA_DIR/autostart" ;;
+  disable) rm -f "$DATA_DIR/autostart" ;;
   status) if running_pid; then exit 0; else echo stopped; exit 1; fi ;;
-  test) "$CORE" -t -d "$DATA_DIR" -f "$DATA_DIR/config.yaml" ;;
-  *) echo 'Usage: flclash-root {start|stop|restart|enable|disable|status|test}' >&2; exit 2 ;;
+  enabled) [ -f "$DATA_DIR/autostart" ] ;;
+  test) configured_path && [ -f "$config_path" ] && "$CORE" --root-test "$config_path" ;;
+  *) echo 'Usage: flclash-root {configure <app config.yaml>|start|stop|restart|enable|disable|status|test}' >&2; exit 2 ;;
 esac

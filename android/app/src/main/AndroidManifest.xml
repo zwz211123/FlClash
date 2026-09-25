@@ -71,6 +71,7 @@
 
         <activity
             android:name=".QuickActionActivity"
+            android:enabled="false"
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@style/TransparentTheme">
@@ -90,6 +91,7 @@
 
         <service
             android:name=".TileService"
+            android:enabled="false"
             android:exported="true"
             android:icon="@drawable/ic"
             android:label="@string/app_name"
@@ -104,7 +106,7 @@
 
         <receiver
             android:name=".ServiceBroadcastReceiver"
-            android:enabled="true"
+            android:enabled="false"
             android:exported="true"
             android:permission="${applicationId}.permission.RECEIVE_BROADCASTS">
             <intent-filter>

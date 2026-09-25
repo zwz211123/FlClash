@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/common/permission.dart';
 import 'package:fl_clash/common/system_dns.dart';
+import 'package:fl_clash/core/root.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/manager/window_manager.dart';
 import 'package:fl_clash/models/models.dart';
@@ -49,9 +50,17 @@ class _AppStateManagerState extends ConsumerState<AppStateManager>
         debouncer.call(FunctionTag.suspend, () async {
           final core = ref.read(coreHandlerProvider);
           if (next == true) {
-            await core.stopListener();
+            if (system.isAndroid) {
+              await RootCore.instance.suspendListener();
+            } else {
+              await core.stopListener();
+            }
           } else {
-            await core.startListener();
+            if (system.isAndroid) {
+              await RootCore.instance.resumeListener();
+            } else {
+              await core.startListener();
+            }
           }
           ref.read(checkIpNumProvider.notifier).add();
         });

@@ -96,6 +96,9 @@ final class CoreBuilder implements Builder {
   BuildRequest? requestFor(BuildInput input) {
     if (!input.config.buildCodeAssets) return null;
     final code = input.config.code;
+    // Android controls the separately installed root module; it must not
+    // compile a second, embedded JNI copy of the Go core into the APK.
+    if (code.targetOS == OS.android) return null;
     final platform = switch (code.targetOS) {
       OS.android => 'android',
       OS.linux => 'linux',

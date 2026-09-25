@@ -197,10 +197,20 @@ func handleChangeProxy(params *ChangeProxyParams) string {
 	}
 	if params.ProxyName == "" {
 		selector.ForceSet(params.ProxyName)
+		if rootControlMode.Load() {
+			if err := saveRootProxySelection(params.GroupName, params.ProxyName); err != nil {
+				logError("cannot save root proxy selection: %v", err)
+			}
+		}
 		return ""
 	}
 	if err := selector.Set(params.ProxyName); err != nil {
 		return err.Error()
+	}
+	if rootControlMode.Load() {
+		if err := saveRootProxySelection(params.GroupName, params.ProxyName); err != nil {
+			logError("cannot save root proxy selection: %v", err)
+		}
 	}
 	return ""
 }
@@ -676,6 +686,11 @@ func handleSetupConfig(params *SetupParams) string {
 	}
 	if err := setupConfig(params); err != nil {
 		return err.Error()
+	}
+	if rootControlMode.Load() {
+		if err := saveRootSetupParams(params); err != nil {
+			return err.Error()
+		}
 	}
 	return ""
 }

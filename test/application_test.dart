@@ -80,11 +80,9 @@ void main() {
       StatusManager,
       ThemeManager,
       AndroidManager,
-      TileManager,
       AppStateManager,
       CoreManager,
       ConnectivityManager,
-      VpnManager,
     ]);
   });
 

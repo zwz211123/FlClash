@@ -277,6 +277,9 @@ extension TunExt on Tun {
 
   Tun getRealTun(RouteMode routeMode) {
     final mRouteAddress = resolveRouteAddress(routeMode);
+    if (system.isAndroid) {
+      return copyWith(autoRoute: true, routeAddress: mRouteAddress);
+    }
     return switch (system.isDesktop) {
       true => copyWith(autoRoute: true, routeAddress: []),
       false => copyWith(

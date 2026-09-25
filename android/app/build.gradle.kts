@@ -56,6 +56,7 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            excludes += setOf("**/libclash.so", "**/libcore.so")
         }
     }
 

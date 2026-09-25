@@ -307,13 +307,11 @@ List<Widget> networkOptionsItems({
   required bool isMacOS,
 }) {
   return [
-    if (isDesktop) const TUNItem(),
+    const TUNItem(),
     if (isMacOS) const AutoSetSystemDnsItem(),
     const TunStackItem(),
-    // mihomo's DefaultSocketHook ignores interface-name on Android
-    // (core/lib.go installHooks, vendored dialer.go), so these rows only
-    // apply on desktop.
-    if (isDesktop) ...[
+    // The root module runs the Linux executable, which honors interface-name.
+    ...[
       const InterfaceNameModeItem(),
       const InterfaceNameItem(),
     ],
@@ -328,18 +326,6 @@ class NetworkListView extends StatelessWidget {
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return generateListView([
-      if (system.isAndroid) const VPNItem(),
-      if (system.isAndroid)
-        ...generateSection(
-          title: 'VPN',
-          items: [
-            const VpnSystemProxyItem(),
-            const BypassDomainItem(),
-            const AllowBypassItem(),
-            const Ipv6Item(),
-            const DNSHijackingItem(),
-          ],
-        ),
       if (system.isDesktop)
         ...generateSection(
           title: appLocalizations.system,

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/core.dart';
 import 'package:fl_clash/core/interface.dart';
+import 'package:fl_clash/core/root.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
@@ -16,7 +17,7 @@ class CoreController {
 
   CoreController._internal() {
     if (system.isAndroid) {
-      _interface = coreLib!;
+      _interface = RootCore.instance;
     } else {
       _interface = coreService!;
     }
@@ -112,6 +113,11 @@ class CoreController {
     required SetupParams params,
     Future<void> Function()? preloadInvoke,
   }) async {
+    if (system.isAndroid) {
+      final result = await _interface.setupConfig(params);
+      if (result.isEmpty) await preloadInvoke?.call();
+      return result;
+    }
     if (preloadInvoke == null) {
       return _interface.setupConfig(params);
     }

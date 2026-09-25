@@ -1,11 +1,7 @@
 import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/core/core.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/plugins/app.dart';
-import 'package:fl_clash/plugins/service.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,8 +15,7 @@ class AndroidManager extends ConsumerStatefulWidget {
   ConsumerState<AndroidManager> createState() => _AndroidContainerState();
 }
 
-class _AndroidContainerState extends ConsumerState<AndroidManager>
-    with ServiceListener {
+class _AndroidContainerState extends ConsumerState<AndroidManager> {
   @override
   void initState() {
     super.initState();
@@ -30,22 +25,13 @@ class _AndroidContainerState extends ConsumerState<AndroidManager>
     ) {
       app?.updateExcludeFromRecents(next);
     }, fireImmediately: true);
-    ref.listenManual(loadedLocaleProvider, (prev, next) {
-      if (prev != null && prev != next) {
-        app?.initShortcuts();
-      }
-    });
     ref.listenManual(sharedStateProvider, (prev, next) {
       if (prev != next) {
         debouncer.call(FunctionTag.saveSharedFile, () async {
           await preferences.saveShareState(next);
         }, duration: const Duration(seconds: 1));
-        if (prev?.needSyncSharedState != next.needSyncSharedState) {
-          service?.syncState(next.needSyncSharedState);
-        }
       }
     });
-    service?.addListener(this);
     app?.onPackagesChanged = _reloadPackages;
   }
 
@@ -61,14 +47,7 @@ class _AndroidContainerState extends ConsumerState<AndroidManager>
     if (app?.onPackagesChanged == _reloadPackages) {
       app?.onPackagesChanged = null;
     }
-    service?.removeListener(this);
     super.dispose();
-  }
-
-  @override
-  void onServiceEvent(CoreEvent event) {
-    coreEventManager.sendEvent(event);
-    super.onServiceEvent(event);
   }
 
   @override

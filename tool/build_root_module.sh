@@ -18,14 +18,14 @@ cp -R "$source_dir/." "$tmp_dir/"
 mkdir -p "$tmp_dir/bin"
 
 (
-  cd "$repo_root/core/Clash.Meta"
-  CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath \
-    -ldflags='-s -w -buildid=' -o "$tmp_dir/bin/mihomo" .
+  cd "$repo_root/core"
+  CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -tags with_gvisor -trimpath \
+    -ldflags='-s -w -buildid=' -o "$tmp_dir/bin/flclash-core" .
 )
 
 for script in "$tmp_dir/customize.sh" "$tmp_dir/service.sh" "$tmp_dir/bin/flclash-root"; do
   bash -n "$script"
 done
-chmod 755 "$tmp_dir/service.sh" "$tmp_dir/bin/flclash-root" "$tmp_dir/bin/mihomo"
+chmod 755 "$tmp_dir/service.sh" "$tmp_dir/bin/flclash-root" "$tmp_dir/bin/flclash-core"
 (cd "$tmp_dir" && zip -q -r "$output_dir/FlClash-root-module-arm64.zip" .)
 echo "$output_dir/FlClash-root-module-arm64.zip"

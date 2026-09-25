@@ -26,7 +26,7 @@ Widget buildManagerStack({
 }) {
   final platformApp = isDesktop
       ? WindowHeaderContainer(child: child)
-      : VpnManager(child: child);
+      : child;
   final state = AppStateManager(
     child: CoreManager(
       child: ConnectivityManager(
@@ -41,7 +41,7 @@ Widget buildManagerStack({
             child: HotKeyManager(child: ProxyManager(child: state)),
           ),
         )
-      : AndroidManager(child: TileManager(child: state));
+      : AndroidManager(child: state);
   return AppEnvManager(
     child: LocaleManager(
       child: StatusManager(child: ThemeManager(child: platformState)),
@@ -85,7 +85,6 @@ class ApplicationState extends ConsumerState<Application> {
       }
       _autoUpdateProfilesTask();
       _initLink();
-      unawaited(app?.initShortcuts());
     });
   }
 

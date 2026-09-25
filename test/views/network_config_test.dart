@@ -193,7 +193,7 @@ void main() {
   });
 
   group('network options items', () {
-    test('interface name rows appear only on desktop', () {
+    test('root Android and desktop expose interface and TUN controls', () {
       final desktopTypes = networkOptionsItems(
         isDesktop: true,
         isMacOS: false,
@@ -205,8 +205,9 @@ void main() {
         isDesktop: false,
         isMacOS: false,
       ).map((item) => item.runtimeType);
-      expect(androidTypes, isNot(contains(InterfaceNameModeItem)));
-      expect(androidTypes, isNot(contains(InterfaceNameItem)));
+      expect(androidTypes, contains(TUNItem));
+      expect(androidTypes, contains(InterfaceNameModeItem));
+      expect(androidTypes, contains(InterfaceNameItem));
     });
   });
 

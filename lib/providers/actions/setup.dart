@@ -89,7 +89,11 @@ class SetupAction extends _$SetupAction {
   }
 
   Future<void> _updateStartTime() async {
-    _startTime = await service?.getRunTime();
+    if (system.isAndroid) {
+      _startTime = (await RootCore.instance.isRunning) ? DateTime.now() : null;
+    } else {
+      _startTime = await service?.getRunTime();
+    }
   }
 
   Future<void> initStatus() async {
@@ -101,7 +105,10 @@ class SetupAction extends _$SetupAction {
     if (system.isAndroid) {
       await _updateStartTime();
     }
-    final shouldRun = _isRunning || ref.read(appSettingProvider).autoRun;
+    final transparentReady =
+        !system.isAndroid || ref.read(patchClashConfigProvider).tun.enable;
+    final shouldRun =
+        transparentReady && (_isRunning || ref.read(appSettingProvider).autoRun);
     if (shouldRun) {
       await setRunning(true, initialize: true);
     } else {
@@ -112,6 +119,16 @@ class SetupAction extends _$SetupAction {
   Future<bool> setRunning(bool running, {bool initialize = false}) {
     if (running && !initialize && !ref.read(initProvider)) {
       return Future.value(true);
+    }
+
+    if (running &&
+        system.isAndroid &&
+        !ref.read(patchClashConfigProvider).tun.enable) {
+      return Future.error(
+        StateError(
+          'Enable TUN in Network settings before starting the transparent proxy',
+        ),
+      );
     }
 
     final request = _RunRequest(
@@ -200,8 +217,16 @@ class SetupAction extends _$SetupAction {
   }
 
   @protected
-  Future<bool> setCoreRunning(bool running) {
-    return running ? _core.startListener() : _core.stopListener();
+  Future<bool> setCoreRunning(bool running) async {
+    final applied = running
+        ? await _core.startListener()
+        : await _core.stopListener();
+    if (!applied) {
+      throw StateError(
+        'The core did not ${running ? 'start' : 'stop'} its listeners',
+      );
+    }
+    return applied;
   }
 
   @protected
@@ -387,6 +412,7 @@ class SetupAction extends _$SetupAction {
   }
 
   bool _getEffectiveTunEnable(bool enableTun) {
+    if (system.isAndroid) return enableTun;
     final authorizationState = ref.read(authorizedTunEnableProvider);
     return enableTun && authorizationState == TunAuthorizationState.authorized;
   }
@@ -398,6 +424,7 @@ class SetupAction extends _$SetupAction {
 
   @visibleForTesting
   Future<bool> requestAdmin(bool enableTun) async {
+    if (system.isAndroid) return true;
     if (!enableTun) {
       return true;
     }

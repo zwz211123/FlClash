@@ -1,13 +1,17 @@
-name: Root module prototype
+name: Root module and controller app
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - feature/root-transparent-module
+      - feature/root-panel-v2
     paths:
       - 'root_module/**'
       - 'tool/build_root_module.sh'
+      - 'core/**'
+      - 'lib/**'
+      - 'android/**'
+      - 'plugins/setup/setup_hooks/**'
       - '.github/workflows/root-module.yaml'
 
 jobs:
@@ -19,11 +23,41 @@ jobs:
           submodules: recursive
       - uses: actions/setup-go@v6
         with:
-          go-version-file: core/Clash.Meta/go.mod
+          go-version: '1.26.4'
           cache-dependency-path: core/Clash.Meta/go.sum
-      - name: Build experimental module
+      - name: Build module
         run: bash tool/build_root_module.sh dist
       - uses: actions/upload-artifact@v4
         with:
-          name: FlClash-root-module-arm64-prototype
+          name: FlClash-root-module-arm64
           path: dist/FlClash-root-module-arm64.zip
+
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: master
+          flutter-version: '3.47.1'
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test tool plugins setup.dart
+      - run: flutter analyze --no-fatal-infos
+      - run: flutter test --reporter expanded
+      - uses: gradle/actions/setup-gradle@v6
+      - uses: nttld/setup-ndk@v1
+        id: build-ndk
+        with:
+          ndk-version: r28c
+          add-to-path: true
+          link-to-sdk: true
+      - run: dart setup.dart android --arch arm64
+        env:
+          ANDROID_NDK_HOME: ${{ steps.build-ndk.outputs.ndk-path }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlClash-root-controller-arm64
+          path: dist/**/*.apk

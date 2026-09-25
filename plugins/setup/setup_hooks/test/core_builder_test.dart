@@ -126,30 +126,12 @@ void main() {
       );
     });
 
-    test('derives the Android compiler from the NDK clang Flutter passes', () {
-      final bin = p.join(repository.path, 'ndk', 'prebuilt', 'host', 'bin');
-      final request = const CoreBuilder().requestFor(
-        buildInput(
-          os: OS.android,
-          architecture: Architecture.arm64,
-          compiler: Uri.file(p.join(bin, 'clang')),
-          ndkApi: 23,
-        ),
-      )!;
-
-      expect(request.target, Target.androidArm64);
+    test('skips the embedded Android core', () {
       expect(
-        request.androidToolchain!.clangFor(Target.androidArm64),
-        p.join(bin, 'aarch64-linux-android23-clang'),
-      );
-    });
-
-    test('fails when Flutter passes no Android compiler', () {
-      expect(
-        () => const CoreBuilder().requestFor(
+        const CoreBuilder().requestFor(
           buildInput(os: OS.android, architecture: Architecture.arm64),
         ),
-        throwsA(isA<InfraError>()),
+        isNull,
       );
     });
 

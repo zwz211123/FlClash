@@ -281,8 +281,8 @@ enum DashboardWidget {
   outboundMode,
   trafficUsage,
   networkDetection,
-  tunButton(platforms: desktopPlatforms),
-  vpnButton(platforms: [SupportPlatform.Android]),
+  tunButton,
+  vpnButton(platforms: []),
   systemProxyButton(platforms: desktopPlatforms),
   intranetIp,
   memoryInfo;
