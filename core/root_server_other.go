@@ -11,4 +11,5 @@ func startRootServer(string, bool) {
 }
 
 func saveRootSetupParams(*SetupParams) error { return nil }
+
 func saveRootProxySelection(string, string) error { return nil }
