@@ -5,6 +5,7 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_dir="$repo_root/root_module"
 output_dir="${1:-$repo_root/dist}"
 mkdir -p "$output_dir"
+output_dir="$(cd "$output_dir" && pwd)"
 
 if [[ ! -f "$repo_root/core/Clash.Meta/go.mod" ]]; then
   echo 'Initialize the Clash.Meta submodule first.' >&2
